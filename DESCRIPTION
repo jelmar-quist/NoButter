@@ -1,0 +1,32 @@
+Package: NoButter
+Title: NoButter: An R package for reducing transcript dispersion in CosMx Spatial Molecular Imaging data
+Version: 0.0.0.9000
+Authors@R: 
+    c(person(given = "Jelmar",
+                    family = "Quist",
+                    role = c("aut", "cre"),
+                    email = "jelmar.quist@kcl.ac.uk"),
+                   person(given = "Béibhinn",
+                    family = "O'Hora",
+                    role = c("aut")),
+                    person(given = "Roman",
+                    family = "Laddach",
+                    role = c("aut")))
+Description: NoButter is an R package designed to evaluate transcript dispersion in CosMx Spatial Molecular Imaging (SMI) spatial transcriptomics data. Using raw data, the transcript distribution of Z-slices can be assessed to systematically identify and discard transcript dispersion while perserving high-confidence transcripts.
+License: MIT
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports: 
+    dplyr,
+    EnvCpt,
+    ggplot2,
+    pheatmap,
+    RColorBrewer,
+    robustbase,
+    scales
+Depends: 
+    tidyverse
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
