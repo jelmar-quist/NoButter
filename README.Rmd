@@ -16,6 +16,8 @@ knitr::opts_chunk$set(
 # NoButter: An R package for reducing transcript dispersion in CosMx Spatial Molecular Imaging data
 
 <!-- badges: start -->
+`r badger::badge_devel("jelmarquist/NoButter", "blue")`
+`r badger::badge_doi("10.1101/2024.11.25.625243", "yellow")`
 <!-- badges: end -->
 
 Transcript dispersion can introduce considerable levels of technical noise to the data that can negatively impact downstream analysis. NoButter is an easy to use R package to evaluate transcript dispersion in CosMx Spatial Molecular Imaging (SMI) data. Using raw transcript data, transcript dispersion can be systematically assessed across Z-slices, FOVs and samples. Clean transcript data can be consolidated into a set of ‘flat files’ for further downstream analysis.

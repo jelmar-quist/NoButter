@@ -4,6 +4,9 @@
 # NoButter: An R package for reducing transcript dispersion in CosMx Spatial Molecular Imaging data
 
 <!-- badges: start -->
+
+[![](https://img.shields.io/badge/devel%20version-0.0.0.9000-blue.svg)](https://github.com/jelmarquist/NoButter)
+[![](https://img.shields.io/badge/doi-10.1101/2024.11.25.625243-yellow.svg)](https://doi.org/10.1101/2024.11.25.625243)
 <!-- badges: end -->
 
 Transcript dispersion can introduce considerable levels of technical
