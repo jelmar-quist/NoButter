@@ -31,6 +31,6 @@ You can install the development version of NoButter from
 [GitHub](https://github.com/) with:
 
 ``` r
-install("devtools")
-devtools::install_github("jelmar-quist/NoButter")
+library("devtools")
+install_github("jelmar-quist/NoButter")
 ```
