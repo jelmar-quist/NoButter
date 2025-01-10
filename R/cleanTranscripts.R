@@ -81,10 +81,10 @@ cleanTranscripts <- function(transcripts, useCellBoundaryFlag = TRUE, useSystemC
   secondCount <- nrow(cleaned_transcripts)
 
   # Report
-  cat("useCellBoundaryFlag and useSystemControlFlag discarded ", round(100-firstPercent, 2), "% (",
-      firstCount, " out of ", allCount, ") of all transcripts\n", sep = "")
-  cat("An additional ", round(100-secondPercent, 2), "% (",
-      secondCount, " out of ", allCount, ") of all transcripts were discarded by useZstackFlag", sep = "")
+  message("useCellBoundaryFlag and useSystemControlFlag discarded ", round(100-firstPercent, 2), "% (",
+      firstCount, " out of ", allCount, ") of all transcripts")
+  message("An additional ", round(100-secondPercent, 2), "% (",
+      secondCount, " out of ", allCount, ") of all transcripts were discarded by useZstackFlag")
 
   return(cleaned_transcripts)
 

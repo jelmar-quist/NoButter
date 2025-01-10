@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 # NoButter: An R package for reducing transcript dispersion in CosMx Spatial Molecular Imaging data
 
 <!-- badges: start -->
-`r badger::badge_devel("jelmarquist/NoButter", "blue")`
+`r badger::badge_devel("jelmar-quist/NoButter", "blue")`
 `r badger::badge_doi("10.1101/2024.11.25.625243", "yellow")`
 <!-- badges: end -->
 

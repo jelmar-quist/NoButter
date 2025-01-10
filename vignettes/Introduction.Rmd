@@ -1,0 +1,201 @@
+---
+title: "An introduction to NoButter"
+author: "Béibhinn O'Hora & Jelmar Quist"
+output:
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    theme: united
+---
+
+```{r, include = FALSE}
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  dpi = 200,
+  out.width = "80%"
+  
+)
+
+```
+
+# Introduction
+Transcripts detection in imaging-based spatial transcriptomics is done through multifocal imaging. The resulting 3D coordinate system consists of the x- and y-axis, representing tissue width and length, and the z-axis, which directly relates to tissue depth. During processing, the CosMx Spatial Molecular Imager (SMI) collects optical Z-slices at an 0.8μm interval. The lower Z-slices (e.g. Z1, Z2) are closer to the imaging objective, whereas the higher Z-slices (e.g. Z7, Z8) are positioned closer to the glass slide.
+
+An important challenge with processing these Z-slices is the increased abundance of background transcripts, which in the higher Z-slices appear to be more prevalent. These transcripts can lead to inaccurate transcript quantification, making downstream analysis less reliable, including accurately assign cell types.
+
+To address this challenge, we developed `NoButter`, an R package that aids in the inspection and visualisation of the transcript distribution across Z-slices, and to help identify patterns of uneven distribution between to Z-slices and in relation to tissue structure. 
+
+
+# Installation
+To install `NoButter`, the following command can be used. There are some optional dependencies that may be useful to install.
+```{r install-package}
+library("devtools")
+devtools::install_github("jelmar-quist/NoButter")
+```
+
+# Downloading data
+We recommend exporting the following data from AtoMx. 
+
+* Flat CSV Files 
+  * Export count matrix flat csv file
+  * Export cell metadata flat csv file
+  * Export transcripts flat csv file
+  * Export polygons flat csv file
+  * Export FOV positions flat csv file
+* RawFiles
+  * (not recommended) Export other Miscellaneous Data Files (large data, if available)
+  
+  
+# Reading raw transcript data
+After exporting the required files from AtoMx, you should have a single folder for each FOV with a file ending in `*complete_code_cell_target_call_coord.csv`; this can typically be found in the `AnalysisResults` folder. This file contains all transcripts identified in a FOV. Using `readTranscripts`, we can read and merge these files.
+
+When `standardiseZstacks` is set to `TRUE`, Z-stacks of FOVs are aligned. Note that this is currently experimented with.
+```{r read-data}
+library("NoButter")
+library("data.table")
+transcripts <- readTranscripts("/Users/k1217281/Documents/projects/CosMx/EllieAlberts/rawFiles/17020688_EllieVickie/")
+```
+
+# Slide layout
+If multiple tissue samples were presents, we recommended to annotate these and ....  To plot the slide layout we first need to read the `fov_positions` file.
+```{r slide-annotation-1}
+fov_position = read.csv(list.files("/Users/k1217281/Documents/projects/CosMx/EllieAlberts/flatFiles/17020688_EllieVickie/", pattern = "fov_positions", full.names = TRUE))
+
+# Plot layout
+ggplot(fov_position, aes(x = x_global_mm, y = y_global_mm, label = FOV)) + 
+  geom_point(size = 4, colour = "red", alpha = 0.3, shape = 15) + 
+  geom_text(size = 4) +
+  xlab("X (in mm)") + ylab("Y (in mm)") +
+  theme_classic(base_size = 24)
+```
+
+Using the `mutate` function from the `dplyr` package, sample identifiers can be easily assigned based on the FOV.
+```{r slide-annotation-2}
+library("dplyr")
+
+# Assign sample identifiers based on FOV
+fov_position <- fov_position %>% 
+  mutate(SampleID = case_when(
+    FOV == 1 ~ "Sample01",
+    FOV >= 2 & FOV <= 13 ~ "Sample02",
+    FOV >= 14 & FOV <= 18 ~ "Sample01",
+    FOV >= 19 & FOV <= 23 ~ "Sample02",
+    FOV >= 24 & FOV <= 44 ~ "Sample01",
+    FOV >= 45 & FOV <= 56 ~ "Sample02",
+    FOV == 57 ~ "Sample01",
+    FOV >= 58 & FOV <= 61 ~ "Sample02",
+    FOV >= 62 & FOV <= 63 ~ "Sample01",
+  )
+  )
+
+# Plot the slide layout and colour by SampleID
+ggplot(fov_position, aes(x = x_global_mm, y = y_global_mm, colour = SampleID)) + 
+  geom_point(size = 4, shape = 15) + 
+  xlab("X (in mm)") + ylab("Y (in mm)") +
+  theme_classic(base_size = 24) +
+  theme(legend.position = "none")
+```
+
+Lastly, we can transpose the sample identifiers to the `transcript` data frame by performing a left join on FOV.
+```{r slide-annotation-3}
+transcripts = left_join(transcripts, fov_position, join_by(fov == FOV))
+```
+
+# Transcript overview {.tabset} 
+The assessment of CosMx data starts by exploring the transcripts distribution across FOVs and samples. Visualising this data in a barplot could help identify areas that may require further investigation. The `plotTranscripts` functions ... In addition, by setting `codeclass` to TRUE, the proportion of system control probes, negative control probes and endogenous transcript probes can be assessed.
+
+In addition to the above, the relationship between the number of cells and the number of transcripts across FOVs can highlight areas that performed differently than expected, for example as a result of poor cell segmentation or RNA quality. By setting `detectOutliers` to TRUE, a linear model is created to investigate this relationship which can be used to systematically identify outliers using an MM-type estimator. In the dotplot, these outlier will be coloured red.
+
+```{r fov-statistics-0}
+library("scales")
+library("robustbase")
+```
+
+## By FOV {.tabset}
+### Number of transcripts
+```{r fov-statistics-1, echo = FALSE}
+plotTranscripts(transcripts)
+```
+
+### Proportion of code class
+```{r fov-statistics-2, echo = FALSE}
+plotTranscripts(transcripts, codeclass = TRUE)
+```
+
+### Correlation number of cells and transcripts
+```{r transcripts-and-cells-3, echo = FALSE}
+plotTranscriptsPerCell(transcripts, detectOutliers = FALSE)
+```
+
+### Outlier detection
+```{r transcripts-and-cells-4, echo = FALSE}
+plotTranscriptsPerCell(transcripts, detectOutliers = TRUE)
+```
+
+## By sample {.tabset}
+### Number of transcripts
+```{r sample-statistics-1, echo = FALSE}
+plotTranscripts(transcripts, by = "SampleID")
+```
+
+### Proportion of code class
+```{r sample-statistics-2, echo = FALSE}
+plotTranscripts(transcripts, codeclass = TRUE, by = "SampleID")
+```
+
+### Correlation number of cells and transcripts
+```{r sample-statistics-3, echo = FALSE}
+plotTranscriptsPerCell(transcripts, detectOutliers = FALSE, by = "SampleID")
+```
+
+### Outlier detection
+```{r sample-statistics-4, echo = FALSE}
+plotTranscriptsPerCell(transcripts, detectOutliers = TRUE, by = "SampleID")
+```
+
+# Transcript distribution {.tabset}
+
+## By FOV
+```{r transcripts-and-Zslices-1, echo = FALSE}
+library("pheatmap")
+plotTranscriptsPerZslice(transcripts)
+```
+
+## By sample
+```{r transcripts-and-Zslices-2, echo = FALSE}
+library("pheatmap")
+plotTranscriptsPerZslice(transcripts, by = "SampleID")
+```
+
+# Detecting dispersion
+```{r transcripts-and-cellboundary-1, results = 'hide'}
+transcripts <- setQualityFlags(transcripts)
+library("EnvCpt")
+plotTranscriptsByCellBoundary(transcripts)
+plotTranscriptsByCellBoundary(transcripts, estimateChangepoint = TRUE)
+```
+
+
+```{r transcripts-and-cellboundary-2, results = 'hide'}
+transcripts <- setZsliceFlag(transcripts, index = 7)
+```
+
+# Quality assessment  {.tabset}
+
+## By FOV
+```{r fov-quality-flags, echo = FALSE}
+plotFlags(transcripts)
+```
+
+## By sample
+```{r sample-quality-flags, echo = FALSE}
+plotFlags(transcripts, by = "SampleID")
+```
+
+# Cleaning transcripts
+
+```{r clean-transcripts, results = "asis"}
+cleaned_transcripts <- cleanTranscripts(transcripts)
+```
